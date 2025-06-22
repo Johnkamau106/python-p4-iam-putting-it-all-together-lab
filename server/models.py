@@ -7,11 +7,11 @@ from config import db, bcrypt
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
-    id = db.column(db.Integer, primarykey=True)
-    username = db.column(db.String, unique=True, nullable=False)
-    _password_hash = db.column(db.String, nullable=False)
-    image_url = db.column(db.String)
-    bio = db.column(db.String)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, unique=True, nullable=False)
+    _password_hash = db.Column(db.String, nullable=False)
+    image_url = db.Column(db.String)
+    bio = db.Column(db.String)
 
     recipes = db.relationship('Recipe', backref='user', cascade="all, delete-orphan")
 
@@ -42,10 +42,10 @@ class User(db.Model, SerializerMixin):
 class Recipe(db.Model, SerializerMixin):
     __tablename__ = 'recipes'
 
-    id = db.column(db.Integer, primary_key=True)
-    title = db.column(db.String)
-    instructions = db.column(db.String)
-    minutes_to_complete = db.column(db.Integer)
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    instructions = db.Column(db.String)
+    minutes_to_complete = db.Column(db.Integer)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
