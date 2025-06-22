@@ -112,6 +112,54 @@ class RecipeIndex(Resource):
             return recipes_data, 200
         return {"error": "Unauthorized"}, 401
 
+    def post(self):
+        user_id = session.get('user_id')
+        if not user_id:
+            return {"error": "Unauthorized"}, 401
+        data = request.get_json()
+        errors = []
+        title = data.get('title')
+        instructions = data.get('instructions')
+        minutes_to_complete = data.get('minutes_to_complete')
+        # Validate required fields
+        if not title or title.strip() == "":
+            errors.append("Title is required.")
+        if not instructions or instructions.strip() == "":
+            errors.append("Instructions are required.")
+        if minutes_to_complete is None:
+            errors.append("Minutes to complete is required.")
+        if errors:
+            return {"errors": errors}, 422
+        try:
+            recipe = Recipe(
+                title=title,
+                instructions=instructions,
+                minutes_to_complete=minutes_to_complete,
+                user_id=user_id
+            )
+            db.session.add(recipe)
+            db.session.commit()
+            user = User.query.get(user_id)
+            return {
+                "id": recipe.id,
+                "title": recipe.title,
+                "instructions": recipe.instructions,
+                "minutes_to_complete": recipe.minutes_to_complete,
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "image_url": user.image_url,
+                    "bio": user.bio
+                }
+            }, 201
+        except Exception as e:
+            db.session.rollback()
+            if hasattr(e, 'args') and e.args:
+                errors.append(str(e.args[0]))
+            else:
+                errors.append(str(e))
+            return {"errors": errors}, 422
+
 api.add_resource(Signup, '/signup', endpoint='signup')
 api.add_resource(CheckSession, '/check_session', endpoint='check_session')
 api.add_resource(Login, '/login', endpoint='login')
